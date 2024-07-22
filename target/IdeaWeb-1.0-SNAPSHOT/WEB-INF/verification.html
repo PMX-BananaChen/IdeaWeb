@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8" />
+		<title>企业用户验证</title>
+		<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+		<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">
+		<meta name="format-detection" content="telephone=no">
+		<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/weui/2.4.4/style/weui.min.css">
+		<link rel="stylesheet" href="https://cdn.bootcss.com/jquery-weui/1.2.0/css/jquery-weui.min.css">
+		<script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+		<style>
+            .verification-top{
+            	padding: 25px;
+            	box-sizing: border-box;
+            }
+            .verification-title{
+            	font-size: 26px;
+            	color: #000;
+            }
+            .verification-stitle{
+            	font-size: 14px;
+            	color: #999;
+            }
+            .verification-stitle span{
+            	color: #737277;
+            	font-weight: bold;
+            	margin: 0 3px;
+            }
+            .page-verification .weui-cells{
+            	margin-top: 0;
+            }
+            .page-verification .weui-cell__hd{
+            	font-size: 16px;
+            	
+            }
+            .page-verification .weui-cell__hd .weui-label{
+            	width: 120px;
+            }
+            .page-verification .weui-cell__bd{
+            	font-size: 16px;
+            }
+            .verification-btn{
+            	padding: 35px  25px 0 25px;
+            }
+		</style>
+		<script type="application/javascript" >
+
+			function getUserId()
+			{
+				debugger;
+				//get code
+				getCodeApi("verification");
+				const code =getUrlParam("code");
+				//回执给到UserId
+				requestUrl(code);
+			}
+
+			function getCodeApi(state){
+				//获取code
+				let urlNow=encodeURIComponent(window.location.href);
+				let scope="snsapi_base";//snsapi_userinfo//静默授权用户无感知
+				let appId ="ww24261f29f0d4837c";
+				let url ="https://open.weixin.qq.com/connect/oauth2/authorize?appid=${appId}&redirect_uri=${urlNow}&response_type=code&scope=${scope}&state=${state}#wechat_redirect";
+				window.location.replace(url);
+			}
+
+			function getUrlParam(name){
+				//封装方法
+				const reg=new RegExp("(^|&)"+name+"=([^&]*)(&|$)");//构造一个含有目标参数的正则表达式对象
+				const r=window.location.search.substr(1).match(reg);//匹配目标参数
+				if(r!=null)return unescape(r[2]);
+				return null;
+				//返回参数值
+			}
+
+			function checkUrl()
+			{
+				debugger;
+				const EmpNo = $("#Emp_No");
+				const UserId= $("#UserId");
+				const name= "verification";
+				const area= "DG";
+				if(!EmpNo){
+					alert("工号不能为空！")
+				}else{
+
+					const param = {EmpNo:$("#Emp_No"),UserId:$("#UserId"),name:"verification",area:"DG"};
+					$.ajax({
+						url: "https://wx2.primax.com.cn/verification/OAuth2/wechatSubmit",
+						data: param,
+						type: "post",
+						dataType: "json",
+						success: function (data) {
+							if (data.state === "success") {
+								alert(data.message);
+								//modalMsg(data.message, data.state);
+								if (close === true) {
+									//modalClose();
+								}
+							} else {
+								//modalAlert(data.message, data.state);
+							}
+						},
+					});
+				}
+			}
+
+			function requestUrl(code)
+			{
+				$("#form1").load(function()
+						{
+							const param = {code:code,name:"verification",area:"DG"};
+							$.ajax({
+								url: "https://wx2.primax.com.cn/verification/OAuth2/wechatLoadUserId",
+								data: param,
+								type: "post",
+								dataType: "json",
+								success: function (data) {
+									if (data.state === "success") {
+										alert(data.message);
+										//modalMsg(data.message, data.state);
+										if (close === true) {
+											//modalClose();
+										}
+									} else {
+										//modalAlert(data.message, data.state);
+									}
+								},
+							});
+						}
+				);
+			}
+		</script>
+	</head>
+
+	<body style="background: #f9f9f9;">
+	<form id="form1" name="form1" method="post" action=""  onload="getUserId();">
+		<div class="page-verification">
+			<div class="verification-top">
+			<p class="verification-title">用户验证</p>
+			<p class="verification-stitle">欢迎您加入<span>东莞东聚电子有限公司</span>企业微信。为了保障您的权益，请您如下指引完成资料绑定。</p>
+			</div>
+			<div class="weui-cells weui-cells_form">
+				<div class="weui-cell">
+					<div class="weui-cell__hd"><label class="weui-label">工号</label></div>
+					<div class="weui-cell__bd">
+						<input class="weui-input" type="text"  placeholder="请输入您的工号" name="Emp_No">
+					</div>
+				</div>
+			</div>
+			<div class="verification-btn">
+				 
+				<input type="submit" name="button" id="button" value="立即验证" onclick="checkUrl();"  class="weui-btn weui-btn_primary"/>
+				<input type="hidden" name="act" id="act" value="save" />
+				<input type="hidden" name="UserId" id="UserId" value="<{$UserId}>" />
+			</div>
+		</div>
+		</form>
+
+		</form>
+	</body>
+
+</html>

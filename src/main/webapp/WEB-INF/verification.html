@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>企业用户验证</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">
+    <meta name="format-detection" content="telephone=no">
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/weui/2.4.4/style/weui.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/jquery-weui/1.2.0/css/jquery-weui.min.css">
+    <script src="jquery-2.1.1.min.js"></script>
+    <style>
+        .verification-top{
+            padding: 25px;
+            box-sizing: border-box;
+        }
+        .verification-title{
+            font-size: 26px;
+            color: #000;
+        }
+        .verification-stitle{
+            font-size: 14px;
+            color: #999;
+        }
+        .verification-stitle span{
+            color: #737277;
+            font-weight: bold;
+            margin: 0 3px;
+        }
+        .page-verification .weui-cells{
+            margin-top: 0;
+        }
+        .page-verification .weui-cell__hd{
+            font-size: 16px;
+
+        }
+        .page-verification .weui-cell__hd .weui-label{
+            width: 120px;
+        }
+        .page-verification .weui-cell__bd{
+            font-size: 16px;
+        }
+        .verification-btn{
+            padding: 35px  25px 0 25px;
+        }
+    </style>
+</head>
+    <body style="background: #f9f9f9;" onload="init()">
+        <form id="form1" name="form1" method="get" action="" >
+            <div class="page-verification">
+                <div class="verification-top">
+                    <p class="verification-title">用户验证</p>
+                    <p class="verification-stitle">欢迎您加入<span>东莞东聚电子有限公司</span>企业微信。为了保障您的权益，请您如下指引完成资料绑定。</p>
+                </div>
+                <div class="weui-cells weui-cells_form">
+                    <div class="weui-cell">
+                        <div class="weui-cell__hd"><label class="weui-label">工号</label></div>
+                        <div class="weui-cell__bd">
+                            <input class="weui-input" type="text"  placeholder="请输入您的工号" name="Emp_No" id="Emp_No">
+                        </div>
+                    </div>
+                </div>
+                <div class="verification-btn">
+                    <input type="button" name="button" id="button" value="立即验证"  class="weui-btn weui-btn_primary"/>
+                    <input type="hidden" name="act" id="act" value="save" />
+                    <input type="hidden" name="UserId" id="UserId" value="" />
+                    <input type="hidden" name="codeV" id="codeV" value="" />
+                </div>
+            </div>
+        </form>
+    </body>
+</html>
+
+<script type="text/javascript">
+
+    function init(){
+        let codeChange=getQueryVariable("code");
+        if(codeChange)
+        {
+            requestUrl(codeChange);
+        }
+        else
+        {   //get code
+            getCodeApi("verification");
+        }
+    }
+
+    function getCodeApi(state){
+        //获取code
+        let urlNow=encodeURIComponent(window.location.href);
+
+        let scope="snsapi_base";//snsapi_userinfo//静默授权用户无感知
+        let appId ="ww24261f29f0d4837c";
+        let url ="https://open.weixin.qq.com/connect/oauth2/authorize?appid="+appId+"&redirect_uri="+urlNow+"&response_type=code&scope="+scope+"&state="+state+"#wechat_redirect";
+        console.log(url);
+        window.location.replace(url);
+    }
+
+    function getQueryVariable(variable)
+    {
+        let query = window.location.search.substring(1);
+        let vars = query.split("&");
+        for (let i=0;i<vars.length;i++) {
+            const pair = vars[i].split("=");
+            if(pair[0] == variable){return pair[1];}
+        }
+        return(false);
+    }
+
+    $("#button").click(function()
+        {
+            const EmpNos=$("#Emp_No").val();
+            const UserId=$("#UserId").val();
+
+            $.ajax({
+                url: "https://wx2.primax.com.cn/verification/OAuth2/wechatSubmit",
+                data: {EmpNo:EmpNos,UserId:UserId,name:"verification",area:"DG"},
+                type: "get",
+                dataType: "json",
+                contentType :"application/json;charset=utf-8",
+                success: function (res)
+                    {
+                        if (res.code == 1) {
+                            alert("验证成功!");
+                        } else {
+                            alert(res.msg);
+                        }
+                    },
+                    error:function()
+                    {
+                        alert("数据请求失败!");
+                    }
+
+            });
+        }
+            //alert("Value: " + $("#Emp_No").val());
+
+    );
+
+    function requestUrl(code)
+    {
+        let param = {name:"verification",area:"DG",code:""+code+""};
+        $.ajax({
+            url:"https://wx2.primax.com.cn/verification/OAuth2/wechatLoadUserId",
+            data:param,
+            type:"get",
+            datatype:"json",
+            contentType :"application/json;charset=utf-8",
+            success: function (res)
+                {
+                    if (res.code == 1) {
+                        $("#UserId").val(res.data.userId);
+                        $("#codeV").val(code);
+                    } else {
+                        //alert(999);
+                    }
+                },
+            error:function()
+            {
+                alert("数据请求失败!");
+            }
+
+        });
+    }
+
+</script>
